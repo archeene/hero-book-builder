@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hero Book Builder</title>
+<meta name="description" content="Turn your Hero of the Holidays comic pages into print-ready PDFs in one click.">
+<style>
+:root{--red:#c0392b;--ink:#1c1c1c;--paper:#fbf6ee;--muted:#5b5b5b;--card:#ffffff;--line:#e4dccf}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 60px}
+header h1{font:900 34px/1.1 Impact,'Arial Black',system-ui;letter-spacing:.5px;margin:0;color:var(--red);text-transform:uppercase}
+header p{margin:6px 0 0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px}
+.card h2{margin:0 0 8px;font-size:18px}
+.steps{margin:0;padding-left:20px}
+.steps li{margin:6px 0}
+.bm{display:inline-block;background:var(--red);color:#fff;text-decoration:none;font-weight:800;padding:10px 16px;border-radius:999px;cursor:grab;box-shadow:0 2px 0 #7d241b}
+.hint{font-size:13px;color:var(--muted)}
+.drop{border:2px dashed var(--red);border-radius:12px;padding:22px 14px;text-align:center;background:#fff7f5;cursor:pointer}
+.drop.over{background:#ffe9e4}
+.drop b{display:block}
+.opts{display:flex;flex-wrap:wrap;gap:10px 18px;margin:14px 0;font-size:14px}
+.opts label{display:flex;align-items:center;gap:6px}
+select{padding:5px 8px;border-radius:6px;border:1px solid #bbb;font:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin:12px 0}
+.tile{position:relative;border:1px solid #ddd;border-radius:6px;overflow:hidden;background:#f3f3f3;aspect-ratio:2/3;cursor:grab}
+.tile img{width:100%;height:100%;object-fit:cover;display:block}
+.tile .n{position:absolute;left:4px;top:4px;background:#000c;color:#fff;font-size:11px;padding:1px 6px;border-radius:4px}
+.tile .x{position:absolute;right:4px;top:4px;background:#fffd;border:0;border-radius:4px;font-size:12px;cursor:pointer;padding:0 6px}
+.tile.pad{display:flex;align-items:center;justify-content:center;font-size:12px;color:#888;background:#fafafa;border-style:dashed;cursor:default}
+.tile.lowres::after{content:'low res';position:absolute;bottom:4px;left:4px;background:#f1c40f;color:#000;font-size:10px;padding:0 5px;border-radius:3px}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button.go{background:var(--red);color:#fff;border:0;border-radius:8px;padding:11px 15px;font-weight:700;cursor:pointer;font-size:14px}
+button.go.alt{background:#2c3e50}
+button.go:disabled{opacity:.4;cursor:not-allowed}
+.status{font-size:14px;margin-top:10px;color:#1e7e34;min-height:20px}
+.note{font-size:13px;color:#444;background:#f6f1e8;border-radius:8px;padding:10px 12px;margin-top:12px}
+.print{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.print div{background:#faf7f2;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:14px}
+.print b{display:block;margin-bottom:4px}
+@media (max-width:600px){.print{grid-template-columns:1fr}header h1{font-size:28px}}
+@media (prefers-color-scheme:dark){:root{--ink:#eee;--paper:#16130f;--muted:#b8b0a3;--card:#201c17;--line:#3a332a}.drop{background:#2a1714}.note,.print div{background:#28221b;color:#ddd}.tile{border-color:#444;background:#2a2620}select{background:#2a2620;color:#eee}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Hero Book Builder</h1>
+<p>Turn your Hero of the Holidays pages into print-ready PDFs. Nothing is uploaded: your pages stay in your browser.</p>
+</header>
+
+<div class="card" id="setup">
+<h2>One-click from Venice</h2>
+<ol class="steps">
+<li>Drag this button to your browser's bookmarks bar (one time only): <a class="bm" id="bm" href="#">Make my Hero Book</a></li>
+<li>When your book is finished in Venice, stay on that chat and click <b>Make my Hero Book</b> in your bookmarks bar.</li>
+<li>This page opens with every page already in order. Pick your book type and download the PDFs.</li>
+</ol>
+<p class="hint">Bookmarks bar hidden? Press Ctrl+Shift+B (Windows) or Cmd+Shift+B (Mac). On a phone, use the manual option below.</p>
+</div>
+
+<div class="card">
+<h2>Your book</h2>
+<div class="drop" id="drop"><b>Pages arrive here automatically, or drop your page images here</b><span class="hint">You can also click to choose files. Drag tiles to change the order.</span><input id="file" type="file" accept="image/*" multiple hidden></div>
+<div class="opts">
+<label>Book type <select id="type"><option value="saddle">Stapled comic (up to about 48 pages)</option><option value="perfect">Paperback graphic novel</option><option value="digital">Digital only</option></select></label>
+<label><input type="checkbox" id="covers" checked> First image is the front cover, last is the back cover</label>
+</div>
+<div class="grid" id="grid"></div>
+<div class="btns">
+<button class="go" id="bInterior" disabled>Download print interior PDF</button>
+<button class="go" id="bCover" disabled>Download cover PDF</button>
+<button class="go alt" id="bDigital" disabled>Download digital book PDF</button>
+</div>
+<div class="status" id="status"></div>
+<div class="note" id="note">Pages are sized to US comic size, 6.625 x 10.25 in, with 0.125 in bleed (6.875 x 10.5 in).</div>
+</div>
+
+<div class="card">
+<h2>Print it</h2>
+<div class="print">
+<div><b>Lulu (best for stapled comics)</b>lulu.com/create/comic-books. Choose Comic Book, 6.63 x 10.25 in, Saddle Stitch, Premium Color. Upload the interior PDF and the cover PDF. About $9.84 for 24 pages plus shipping from $5.69.</div>
+<div><b>PrestoPhoto (paperbacks and more sizes)</b>prestophoto.com/create/comic-book-printing. Upload the digital book PDF or your images. 20 to 400 pages, made in about 4 business days.</div>
+</div>
+<p class="hint">Holiday tip: print-on-demand takes 1 to 3 weeks with shipping. Order by early December, and keep the digital PDF ready to share on Christmas morning.</p>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+const TRIM_W=6.625,TRIM_H=10.25,BLEED=0.125,PW=TRIM_W+2*BLEED,PH=TRIM_H+2*BLEED,MIN_PX=1500;
+const ORIGIN=location.origin;
+let pages=[],dragFrom=null,received=false;
+const $=id=>document.getElementById(id);
+const status=$('status');
+
+// Bookmarklet: runs on the Venice chat page, reads the generated images and sends them here.
+const bmCode=`(async()=>{const O=${JSON.stringify(ORIGIN)},U=${JSON.stringify(location.origin+location.pathname)}+'?from=venice';
+const all=[...document.querySelectorAll('img')].filter(i=>i.src&&i.src.startsWith('blob:')&&/generated/i.test(i.alt||''));
+const mk=[...document.querySelectorAll('body *')].filter(e=>e.childElementCount===0&&/FINAL BOOK/.test(e.textContent||'')).pop();
+let s=all;if(mk){const a=all.filter(i=>mk.compareDocumentPosition(i)&4);if(a.length)s=a}
+const seen=new Set();s=s.filter(i=>!seen.has(i.src)&&seen.add(i.src));
+if(!s.length){alert('Hero Book: no finished pages found on this page. Open the chat with your finished book and try again.');return}
+const w=window.open(U,'herobook');const f=[];
+for(let k=0;k<s.length;k++){const b=await (await fetch(s[k].src)).blob();f.push({name:'page_'+String(k).padStart(2,'0')+'.'+((b.type.split('/')[1])||'png'),blob:b})}
+let done=false;const send=()=>{if(!done&&w)w.postMessage({type:'hero-pages',files:f},O)};
+window.addEventListener('message',e=>{if(e.origin===O&&e.data){if(e.data.type==='hero-ready')send();if(e.data.type==='hero-got')done=true}});
+[800,2000,4000,7000].forEach(t=>setTimeout(send,t));})()`;
+$('bm').href='javascript:'+encodeURIComponent(bmCode);
+$('bm').onclick=e=>{e.preventDefault();alert('Drag this button to your bookmarks bar instead of clicking it here.')};
+
+// Receive pages from the bookmarklet.
+window.addEventListener('message',async e=>{
+  const d=e.data;if(!d||d.type!=='hero-pages'||received)return;
+  received=true;try{e.source&&e.source.postMessage({type:'hero-got'},'*')}catch(_){}
+  status.textContent='Receiving '+d.files.length+' page(s) from Venice...';
+  await addFiles(d.files.map(x=>new File([x.blob],x.name,{type:x.blob.type||'image/png'})),true);
+  document.querySelector('#drop').scrollIntoView({behavior:'smooth'});
+});
+if(window.opener){try{window.opener.postMessage({type:'hero-ready'},'*')}catch(_){}}
+
+const drop=$('drop'),file=$('file');
+drop.onclick=()=>file.click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');addFiles([...e.dataTransfer.files])};
+file.onchange=()=>addFiles([...file.files]);
+$('type').onchange=render;$('covers').onchange=render;
+
+function addFiles(files,keepOrder){
+  files=files.filter(f=>f.type.startsWith('image/'));
+  if(!keepOrder)files.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  return Promise.all(files.map(f=>new Promise(res=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>res({name:f.name,src:r.result,w:img.naturalWidth,h:img.naturalHeight});img.onerror=()=>res(null);img.src=r.result};r.readAsDataURL(f)})))
+  .then(list=>{pages=pages.concat(list.filter(Boolean));render();status.textContent=pages.length+' page(s) ready.'});
+}
+function split(){
+  const covers=$('covers').checked&&pages.length>=2;
+  const front=covers?pages[0]:null,back=covers?pages[pages.length-1]:null;
+  const inner=covers?pages.slice(1,-1):pages.slice();
+  const pad=$('type').value==='saddle'?(4-inner.length%4)%4:0;
+  return {front,back,inner,pad};
+}
+function render(){
+  const grid=$('grid');grid.innerHTML='';const s=split();
+  pages.forEach((p,i)=>{const t=document.createElement('div');t.className='tile'+(Math.max(p.w,p.h)<MIN_PX?' lowres':'');t.draggable=true;
+    const label=(s.front&&i===0)?'Front':(s.back&&i===pages.length-1)?'Back':String(i+(s.front?0:1));
+    t.innerHTML='<img alt="" src="'+p.src+'"><span class="n">'+label+'</span><button class="x" title="Remove">x</button>';
+    t.querySelector('.x').onclick=e=>{e.stopPropagation();pages.splice(i,1);render()};
+    t.ondragstart=()=>{dragFrom=i};t.ondragover=e=>e.preventDefault();
+    t.ondrop=e=>{e.preventDefault();e.stopPropagation();if(dragFrom===null)return;const [m]=pages.splice(dragFrom,1);pages.splice(i,0,m);dragFrom=null;render()};
+    grid.appendChild(t)});
+  for(let k=0;k<s.pad;k++){const t=document.createElement('div');t.className='tile pad';t.textContent='blank page';grid.appendChild(t)}
+  const has=pages.length>0,dig=$('type').value==='digital';
+  $('bInterior').disabled=!has||dig;$('bCover').disabled=!has||dig||!s.front;$('bDigital').disabled=!has;
+  const low=pages.filter(p=>Math.max(p.w,p.h)<MIN_PX).length;
+  let msg=has?(dig?pages.length+' pages in reading order.':'Inside pages: '+s.inner.length+(s.pad?' plus '+s.pad+' blank to reach a multiple of 4':'')+'. Page size 6.875 x 10.5 in with bleed. Keep text and faces 0.25 in inside the edge.'):'Pages are sized to US comic size, 6.625 x 10.25 in, with 0.125 in bleed (6.875 x 10.5 in).';
+  if($('type').value==='perfect'&&has)msg+=' Paperback covers need a spine, so use the front and back pages from the cover PDF with your printer\'s cover template.';
+  if(low)msg+=' '+low+' page(s) are low resolution and may print soft: ask the Mind to upscale them first.';
+  $('note').textContent=msg;
+}
+function fill(doc,p,x,y,w,h){
+  const r=Math.max(w/p.w,h/p.h),dw=p.w*r,dh=p.h*r,fmt=/^data:image\/png/.test(p.src)?'PNG':'JPEG';
+  doc.saveGraphicsState();doc.rect(x,y,w,h,null);doc.clip();doc.discardPath();
+  doc.addImage(p.src,fmt,x+(w-dw)/2,y+(h-dh)/2,dw,dh,undefined,'FAST');
+  doc.restoreGraphicsState();
+}
+function newDoc(w,h){const {jsPDF}=window.jspdf;return new jsPDF({unit:'in',format:[w,h],orientation:w>h?'landscape':'portrait',compress:true})}
+function save(doc,name){doc.save(name);status.textContent='Downloaded '+name+'.'}
+function pdf(list,name){const doc=newDoc(PW,PH);list.forEach((p,i)=>{if(i>0)doc.addPage([PW,PH],'portrait');if(p)fill(doc,p,0,0,PW,PH)});save(doc,name)}
+$('bInterior').onclick=()=>{const s=split();pdf(s.inner.concat(Array(s.pad).fill(null)),'hero-book-interior.pdf')};
+$('bDigital').onclick=()=>pdf(pages,'hero-book-digital.pdf');
+$('bCover').onclick=()=>{const s=split();
+  if($('type').value==='saddle'){const W=2*TRIM_W+2*BLEED,doc=newDoc(W,PH);fill(doc,s.back,0,0,W/2,PH);fill(doc,s.front,W/2,0,W/2,PH);save(doc,'hero-book-cover.pdf')}
+  else pdf([s.front,s.back],'hero-book-cover-front-back.pdf')};
+render();
+})();
+</script>
+</body>
+</html>
