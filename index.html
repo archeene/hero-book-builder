@@ -56,7 +56,7 @@ button.go:disabled{opacity:.4;cursor:not-allowed}
 <ol class="steps">
 <li>Drag this button to your browser's bookmarks bar (one time only): <a class="bm" id="bm" href="#">Make my Hero Book</a></li>
 <li>When your book is finished in Venice, stay on that chat and click <b>Make my Hero Book</b> in your bookmarks bar.</li>
-<li>This page opens with every page already in order. Pick your book type and download the PDFs.</li>
+<li>This page opens with every page already in order, ready to download as PDFs for Lulu.</li>
 </ol>
 <p class="hint">Bookmarks bar hidden? Press Ctrl+Shift+B (Windows) or Cmd+Shift+B (Mac). On a phone, use the manual option below.</p>
 </div>
@@ -65,7 +65,7 @@ button.go:disabled{opacity:.4;cursor:not-allowed}
 <h2>Your book</h2>
 <div class="drop" id="drop"><b>Pages arrive here automatically, or drop your page images here</b><span class="hint">You can also click to choose files. Drag tiles to change the order.</span><input id="file" type="file" accept="image/*" multiple hidden></div>
 <div class="opts">
-<label>Book type <select id="type"><option value="saddle">Stapled comic</option><option value="perfect">Paperback graphic novel</option><option value="digital">Digital only</option></select></label>
+<input type="hidden" id="type" value="saddle">
 <label><input type="checkbox" id="covers" checked> First image is the front cover, last is the back cover</label>
 </div>
 <div class="grid" id="grid"></div>
@@ -79,12 +79,14 @@ button.go:disabled{opacity:.4;cursor:not-allowed}
 </div>
 
 <div class="card">
-<h2>Print it</h2>
-<div class="print">
-<div><b>Lulu (best for stapled comics)</b>lulu.com/create/comic-books. Choose Comic Book, 6.63 x 10.25 in, Saddle Stitch, Premium Color. Upload the interior PDF and the cover PDF. About $9.84 for 24 pages plus shipping from $5.69.</div>
-<div><b>PrestoPhoto (paperbacks and more sizes)</b>prestophoto.com/create/comic-book-printing. Upload the digital book PDF or your images. 20 to 400 pages, made in about 4 business days.</div>
-</div>
-<p class="hint">Holiday tip: print-on-demand takes 1 to 3 weeks with shipping. Order by early December, and keep the digital PDF ready to share on Christmas morning.</p>
+<h2>Print it at Lulu</h2>
+<ol class="steps">
+<li>Download the <b>print interior PDF</b> and the <b>cover PDF</b> above.</li>
+<li>Go to <a href="https://www.lulu.com/create/comic-books" target="_blank" rel="noopener">lulu.com/create/comic-books</a> and create a free account.</li>
+<li>Choose <b>Comic Book</b>, 6.63 x 10.25 in, <b>Saddle Stitch</b>, <b>Premium Color</b>, Glossy cover.</li>
+<li>Upload the two PDFs and order. About $7 to $10 per copy plus shipping (US mail from about $6).</li>
+</ol>
+<p class="hint">Holiday tip: allow 2 to 3 weeks with mail shipping. Order by early December, and keep the digital PDF ready to share on Christmas morning.</p>
 </div>
 </div>
 
@@ -128,7 +130,7 @@ drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
 drop.ondragleave=()=>drop.classList.remove('over');
 drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');addFiles([...e.dataTransfer.files])};
 file.onchange=()=>addFiles([...file.files]);
-$('type').onchange=render;$('covers').onchange=render;
+$('covers').onchange=render;
 
 function addFiles(files,keepOrder){
   files=files.filter(f=>f.type.startsWith('image/'));
@@ -157,7 +159,6 @@ function render(){
   $('bInterior').disabled=!has||dig;$('bCover').disabled=!has||dig||!s.front;$('bDigital').disabled=!has;
   const low=pages.filter(p=>Math.max(p.w,p.h)<MIN_PX).length;
   let msg=has?(dig?pages.length+' pages in reading order.':'Inside pages: '+s.inner.length+(s.pad?' plus '+s.pad+' blank to reach a multiple of 4':'')+'. Page size 6.875 x 10.5 in with bleed. Keep text and faces 0.25 in inside the edge.'):'Pages are sized to US comic size, 6.625 x 10.25 in, with 0.125 in bleed (6.875 x 10.5 in).';
-  if($('type').value==='perfect'&&has)msg+=' Paperback covers need a spine, so use the front and back pages from the cover PDF with your printer\'s cover template.';
   if(low)msg+=' '+low+' page(s) are low resolution and may print soft: ask the Mind to upscale them first.';
   $('note').textContent=msg;
 }
